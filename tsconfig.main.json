@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["es2021.intl"],
-    "module": "es2022",
+    "target": "esnext",
+    "module": "commonjs",
+    "lib": ["es2021.intl", "ES2015.Core"],
     "moduleResolution": "node",
     "declaration": true,
     "strict": true,
     "sourceMap": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
