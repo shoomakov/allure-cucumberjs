@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChaiPartial = void 0;
-const ChaiPartial = (_chai, utils) => {
+export const ChaiPartial = (_chai, utils) => {
     const isType = (type, target) => {
         return utils.type(target).toUpperCase() === type.toUpperCase();
     };
@@ -44,5 +41,4 @@ const ChaiPartial = (_chai, utils) => {
         this.assert(partial(object, expected), "expected #{this} to be like #{exp}", "expected #{this} to not like #{exp}", expected, object, _chai.config.showDiff);
     });
 };
-exports.ChaiPartial = ChaiPartial;
 //# sourceMappingURL=chai-partial.js.map

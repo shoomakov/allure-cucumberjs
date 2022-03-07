@@ -1,18 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CucumberJSAllureFormatter = exports.CucumberJSAllureFormatterConfig = exports.Allure = void 0;
-const cucumber_1 = require("@cucumber/cucumber");
-const allure_js_commons_1 = require("allure-js-commons");
-const CucumberAllureInterface_1 = require("./CucumberAllureInterface");
-const Example_1 = require("./events/Example");
-const SourceLocation_1 = require("./events/SourceLocation");
-const utilities_1 = require("./utilities");
-var allure_js_commons_2 = require("allure-js-commons");
-Object.defineProperty(exports, "Allure", { enumerable: true, get: function () { return allure_js_commons_2.Allure; } });
-class CucumberJSAllureFormatterConfig {
+import { Formatter } from "@cucumber/cucumber";
+import { ContentType, LabelName, } from "allure-js-commons";
+import { CucumberAllureInterface } from "./CucumberAllureInterface";
+import { examplesToSensibleFormat } from "./events/Example";
+import { SourceLocation } from "./events/SourceLocation";
+import { applyExample, hash, statusTextToAllure, statusTextToStage, stripIndent, } from "./utilities";
+export { Allure } from "allure-js-commons";
+export class CucumberJSAllureFormatterConfig {
 }
-exports.CucumberJSAllureFormatterConfig = CucumberJSAllureFormatterConfig;
-class CucumberJSAllureFormatter extends cucumber_1.Formatter {
+export class CucumberJSAllureFormatter extends Formatter {
     constructor(options, allureRuntime, config) {
         super(options);
         this.allureRuntime = allureRuntime;
@@ -46,7 +41,7 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
             }
             return message;
         };
-        this.allureInterface = new CucumberAllureInterface_1.CucumberAllureInterface(this, this.allureRuntime);
+        this.allureInterface = new CucumberAllureInterface(this, this.allureRuntime);
         options.supportCodeLibrary.World.prototype.allure = this.allureInterface;
         this.beforeHooks = options.supportCodeLibrary.beforeTestCaseHookDefinitions;
         this.afterHooks = options.supportCodeLibrary.afterTestCaseHookDefinitions;
@@ -76,8 +71,8 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
                     }
                 }
                 if (test.type === "ScenarioOutline") {
-                    for (const example of (0, Example_1.examplesToSensibleFormat)(test.examples || [])) {
-                        const copy = Object.assign({}, test);
+                    for (const example of examplesToSensibleFormat(test.examples || [])) {
+                        const copy = { ...test };
                         copy.example = example;
                         data.document.caseMap.set(example.line, copy);
                     }
@@ -96,15 +91,15 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         if (this.currentTest === null || this.currentGroup === null) {
             throw new Error("No current test info");
         }
-        this.currentTest.status = (0, utilities_1.statusTextToAllure)(data.result.status);
-        this.currentTest.stage = (0, utilities_1.statusTextToStage)(data.result.status);
+        this.currentTest.status = statusTextToAllure(data.result.status);
+        this.currentTest.stage = statusTextToStage(data.result.status);
         this.setException(this.currentTest, data.result.exception);
         this.currentTest.endTest();
         this.currentGroup.endGroup();
     }
     onTestCasePrepared(data) {
         this.stepsMap.clear();
-        this.stepsMap.set(SourceLocation_1.SourceLocation.toKey(data), data.steps);
+        this.stepsMap.set(SourceLocation.toKey(data), data.steps);
         this.currentBefore = null;
         this.currentAfter = null;
     }
@@ -118,7 +113,7 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
             throw new Error("Unknown scenario");
         }
         this.currentGroup = this.allureRuntime.startGroup();
-        this.currentTest = this.currentGroup.startTest((0, utilities_1.applyExample)(test.name || "Unnamed test", test.example));
+        this.currentTest = this.currentGroup.startTest(applyExample(test.name || "Unnamed test", test.example));
         const info = {
             uri: data.sourceLocation.uri,
             f: feature.feature.name,
@@ -134,13 +129,13 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
                 this.currentTest.addParameter(prop, test.example.arguments[prop]);
             }
         }
-        this.currentTest.historyId = (0, utilities_1.hash)(JSON.stringify(info));
-        this.currentTest.addLabel(allure_js_commons_1.LabelName.THREAD, `${process.pid}`);
+        this.currentTest.historyId = hash(JSON.stringify(info));
+        this.currentTest.addLabel(LabelName.THREAD, `${process.pid}`);
         this.currentTest.fullName = `${data.sourceLocation.uri}:${feature.feature.name}:${test.name || "unknown"}`;
-        this.currentTest.addLabel(allure_js_commons_1.LabelName.FEATURE, feature.feature.name);
-        this.currentTest.description = (0, utilities_1.stripIndent)(test.description || "");
+        this.currentTest.addLabel(LabelName.FEATURE, feature.feature.name);
+        this.currentTest.description = stripIndent(test.description || "");
         for (const tag of [...(test.tags || []), ...feature.feature.tags]) {
-            this.currentTest.addLabel(allure_js_commons_1.LabelName.TAG, tag.name);
+            this.currentTest.addLabel(LabelName.TAG, tag.name);
             for (const label in this.labels) {
                 if (!this.labels[label]) {
                     continue;
@@ -176,7 +171,7 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         }
         const type = data.media.type;
         let content = data.data;
-        if ([allure_js_commons_1.ContentType.JPEG, allure_js_commons_1.ContentType.PNG, allure_js_commons_1.ContentType.WEBM].includes(type)) {
+        if ([ContentType.JPEG, ContentType.PNG, ContentType.WEBM].includes(type)) {
             content = Buffer.from(content, "base64");
         }
         const file = this.allureRuntime.writeAttachment(content, { contentType: type });
@@ -187,14 +182,14 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         if (currentStep === null) {
             throw new Error("No current step defined");
         }
-        currentStep.status = (0, utilities_1.statusTextToAllure)(data.result.status);
-        currentStep.stage = (0, utilities_1.statusTextToStage)(data.result.status);
+        currentStep.status = statusTextToAllure(data.result.status);
+        currentStep.stage = statusTextToStage(data.result.status);
         this.setException(currentStep, data.result.exception);
         currentStep.endStep();
         this.popStep();
     }
     onTestStepStarted(data) {
-        const location = (this.stepsMap.get(SourceLocation_1.SourceLocation.toKey(data.testCase)) || [])[data.index];
+        const location = (this.stepsMap.get(SourceLocation.toKey(data.testCase)) || [])[data.index];
         const feature = this.featureMap.get(data.testCase.sourceLocation.uri);
         if (feature === undefined) {
             throw new Error("Unknown feature");
@@ -227,7 +222,7 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         if (step === undefined) {
             throw new Error("Unknown step");
         }
-        let stepText = (0, utilities_1.applyExample)(`${step.keyword || ""}${step.text || "unknown"}`, test.example);
+        let stepText = applyExample(`${step.keyword || ""}${step.text || "unknown"}`, test.example);
         const isAfter = this.afterHooks.find(({ uri, line }) => {
             if (location.actionLocation === undefined) {
                 return false;
@@ -270,15 +265,15 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         if (step.argument !== undefined) {
             if (step.argument.content !== undefined) {
                 const file = this.allureRuntime.writeAttachment(step.argument.content, {
-                    contentType: allure_js_commons_1.ContentType.TEXT,
+                    contentType: ContentType.TEXT,
                 });
-                allureStep.addAttachment("Text", allure_js_commons_1.ContentType.TEXT, file);
+                allureStep.addAttachment("Text", ContentType.TEXT, file);
             }
             if (step.argument.rows !== undefined) {
                 const file = this.allureRuntime.writeAttachment(step.argument.rows
                     .map((row) => row.cells.map((cell) => cell.value.replace(/\t/g, "    ")).join("\t"))
-                    .join("\n"), { contentType: allure_js_commons_1.ContentType.TSV });
-                allureStep.addAttachment("Table", allure_js_commons_1.ContentType.TSV, file);
+                    .join("\n"), { contentType: ContentType.TSV });
+                allureStep.addAttachment("Table", ContentType.TSV, file);
             }
         }
     }
@@ -303,5 +298,4 @@ class CucumberJSAllureFormatter extends cucumber_1.Formatter {
         }
     }
 }
-exports.CucumberJSAllureFormatter = CucumberJSAllureFormatter;
 //# sourceMappingURL=CucumberJSAllureReporter.js.map

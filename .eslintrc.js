@@ -17,5 +17,5 @@ module.exports = {
     // sourceType: "module",
     warnOnUnsupportedTypeScriptVersion: false,
   },
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
 };

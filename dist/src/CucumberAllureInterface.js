@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.WrappedStep = exports.CucumberAllureInterface = void 0;
-const allure_js_commons_1 = require("allure-js-commons");
-class CucumberAllureInterface extends allure_js_commons_1.Allure {
+import { Allure, isPromise, Status, } from "allure-js-commons";
+export class CucumberAllureInterface extends Allure {
     constructor(reporter, runtime) {
         super(runtime);
         this.reporter = reporter;
@@ -18,7 +15,7 @@ class CucumberAllureInterface extends allure_js_commons_1.Allure {
             wrappedStep.endStep();
             throw err;
         }
-        if ((0, allure_js_commons_1.isPromise)(result)) {
+        if (isPromise(result)) {
             const promise = result;
             return promise
                 .then((a) => {
@@ -80,8 +77,7 @@ class CucumberAllureInterface extends allure_js_commons_1.Allure {
         return new WrappedStep(this.reporter, allureStep);
     }
 }
-exports.CucumberAllureInterface = CucumberAllureInterface;
-class WrappedStep {
+export class WrappedStep {
     constructor(reporter, step) {
         this.reporter = reporter;
         this.step = step;
@@ -95,7 +91,7 @@ class WrappedStep {
         this.step.status = status;
     }
     setError(error) {
-        this.step.status = allure_js_commons_1.Status.FAILED;
+        this.step.status = Status.FAILED;
         this.step.detailsMessage = error.message;
         this.step.detailsTrace = error.stack;
     }
@@ -107,5 +103,4 @@ class WrappedStep {
         return this.step.wrap(body)();
     }
 }
-exports.WrappedStep = WrappedStep;
 //# sourceMappingURL=CucumberAllureInterface.js.map

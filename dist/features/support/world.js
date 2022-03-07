@@ -1,36 +1,12 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = __importStar(require("path"));
-const stream_1 = require("stream");
-const cucumber_1 = require("@cucumber/cucumber");
-const fs = __importStar(require("fs-extra"));
-const glob_1 = __importDefault(require("glob"));
-const verror_1 = __importDefault(require("verror"));
+import * as path from "path";
+import { PassThrough } from "stream";
+import { Cli as CucumberCli, setWorldConstructor } from "@cucumber/cucumber";
+import * as fs from "fs-extra";
+import glob from "glob";
+import VError from "verror";
 const getAllureReport = (reportPath) => {
     const allureReport = { testResults: [] };
-    const files = glob_1.default.sync(path.join(reportPath, "/*-result.json"));
+    const files = glob.sync(path.join(reportPath, "/*-result.json"));
     files.forEach((file) => {
         const content = fs.readJSONSync(file);
         allureReport.testResults.push(content);
@@ -59,14 +35,14 @@ class AllureWorld {
         let error;
         let stdout = "";
         let stderr = "";
-        const stdoutStream = new stream_1.PassThrough();
+        const stdoutStream = new PassThrough();
         stdoutStream.on("readable", () => {
             let chunk;
             while ((chunk = stdoutStream.read())) {
                 stdout += Buffer.concat([chunk]).toString("utf8");
             }
         });
-        const cucumberClient = new cucumber_1.Cli({ argv: argv, cwd: cwd, stdout: stdoutStream });
+        const cucumberClient = new CucumberCli({ argv: argv, cwd: cwd, stdout: stdoutStream });
         try {
             const { success } = await cucumberClient.run();
             if (!success) {
@@ -75,7 +51,7 @@ class AllureWorld {
         }
         catch (err) {
             error = err;
-            stderr = verror_1.default.fullStack(error);
+            stderr = VError.fullStack(error);
         }
         stdoutStream.end();
         this.allureReport = getAllureReport(formatterOutPath);
@@ -88,5 +64,5 @@ class AllureWorld {
         return undefined;
     }
 }
-(0, cucumber_1.setWorldConstructor)(AllureWorld);
+setWorldConstructor(AllureWorld);
 //# sourceMappingURL=world.js.map

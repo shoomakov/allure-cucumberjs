@@ -85,6 +85,7 @@ export class CucumberAllureInterface extends Allure {
     this.currentTest.addTmsLink(url, name);
   }
 
+  // @ts-ignore
   protected get currentExecutable(): ExecutableItemWrapper {
     const result = this.reporter.currentStep || this.reporter.currentTest;
     if (result === null) {
@@ -93,6 +94,7 @@ export class CucumberAllureInterface extends Allure {
     return result;
   }
 
+  // @ts-ignore
   protected get currentTest(): AllureTest {
     if (this.reporter.currentTest === null) {
       throw new Error("No test running!");

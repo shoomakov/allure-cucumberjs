@@ -1,14 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.examplesToSensibleFormat = exports.Example = void 0;
-class Example {
+export class Example {
     constructor() {
         this.line = 0;
         this.arguments = {};
     }
 }
-exports.Example = Example;
-const examplesToSensibleFormat = (examples) => {
+export const examplesToSensibleFormat = (examples) => {
     const result = [];
     for (const table of examples) {
         for (const row of table.tableBody || []) {
@@ -22,5 +18,4 @@ const examplesToSensibleFormat = (examples) => {
     }
     return result;
 };
-exports.examplesToSensibleFormat = examplesToSensibleFormat;
 //# sourceMappingURL=Example.js.map
